@@ -1,0 +1,23 @@
+{
+  "name": "gather",
+  "productName": "Gather: URLS to importable content",
+  "version": "0.0.10-dev",
+  "description": "A hackable text editor for the 21st Century.",
+  "main": "./src/main-process/main.js",
+  "repository": {
+  "type": "git",
+  "url": "https://github.com/kwhite/gather.git"
+  },
+  "bugs": {
+  "url": "https://github.com/kwhite/gather/issues"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "cheerio": "^1.0.0-rc.2",
+    "csv-write-stream": "^2.0.0",
+    "papaparse": "^4.3.6",
+    "prompt": "^1.0.0",
+    "request": "^2.83.0",
+    "request-promise": "^4.2.2"
+  }
+}
