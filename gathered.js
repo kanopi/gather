@@ -9,6 +9,7 @@ var request = require('request-promise'),
 
 var buildContent = {
   data : [],
+  schema : {},
   init : function() {
     this.getUserInput();
   },
@@ -18,6 +19,9 @@ var buildContent = {
       properties: {
         filename: {
           description: "Please enter the file path"
+        },
+        type: {
+          description: "Please enter the slug for the post type"
         }
       }
     };
@@ -26,6 +30,7 @@ var buildContent = {
         if (err) { return onErr(err); }
 
         // load file to a string. need to add error handling.
+        buildContent.schema = inputSchema;
         var file = fs.readFileSync(inputSchema.filename, 'UTF-8');
         // parse CSV.
         buildContent.parsePages(file);
@@ -62,10 +67,10 @@ var buildContent = {
       	.then(function($) {
       		var content = $('#maincol');
           var item = {
-            type: 'post',
+            type: buildContent.schema.type,
             //url: url,
-            'title': buildContent.cleanContent( content.find('h1').first().text() ),
-            'dateline': buildContent.cleanContent( content.find('.author').first().text() ),
+            'title': buildContent.scrub( content.find('h1').first().text() ),
+            'dateline': buildContent.scrub( content.find('.author').first().text() ),
             'content': content.find('.blog-body').html().replace(/[\x00-\x1F\x7F-\x9F]/g, "")
           };
           console.log(item);
@@ -74,15 +79,15 @@ var buildContent = {
         .catch( function(err) {onErr(err);} )
         .finally(function() {
           // if all requests are zeroed out, write to file.
-          
+
         })
     }
   },
   writeContent : function () {
-    console.log('writeContent:', buildContent.data);
-    //console.log(JSON.stringify(exhibitions));
+    //console.log('writeContent:', buildContent.data);
+    //console.log(JSON.stringify());
   },
-  cleanContent : function (content) {
+  scrub : function (content) {
     return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
   }
 };

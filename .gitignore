@@ -39,3 +39,4 @@ Thumbs.db
 # Build Files #
 ###############
 node_modules/*
+csv/*
