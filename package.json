@@ -1,8 +1,8 @@
 {
   "name": "gather",
-  "productName": "Gather: URLS to importable content",
+  "productName": "Gather: a content bouquet",
   "version": "0.0.10-dev",
-  "description": "A hackable text editor for the 21st Century.",
+  "description": "Gathering content from URLs for CMS import.",
   "main": "./src/main-process/main.js",
   "repository": {
   "type": "git",
