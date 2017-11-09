@@ -14,7 +14,8 @@ var buildContent = {
   urlStream : '',
   pageList : [],
   init : function() {
-    // promises promises
+    // I don't like having all of this in callback functions but chaining
+    // this seems needlessly complicated. Ideas??
     this.getUserInput();
     //Promise.all(main).then(this.writeContent());
   },
@@ -55,7 +56,7 @@ var buildContent = {
         if (results.errors.length) {
           onErr(results.errors);
         }
-        console.log('Getting CSV Contents:',results.data.length,'items found.');
+        console.log('Getting page URLs:',results.data.length,'items found.');
         that.pageList = results.data;
         that.getPages();
     	}
@@ -64,11 +65,11 @@ var buildContent = {
     return this;
   },
   getPages : function () {
-    console.log('Accessing page contents.');
+    console.log('Accessing page contents. Please wait.');
     // this has to use promises.
     var that = this;
     var requests = [];
-    for(var i = 0, len = this.pageList.length; i < len; i++) { // stubbing out count since we have a lot of records.
+    for(var i = 0, len = this.pageList.length; i < len; i++) {
         var row = this.pageList[i];
         var options = {
           uri: row.URL,
@@ -79,14 +80,20 @@ var buildContent = {
         requests.push(
           request(options)
           .then(function($) {
-            var content = $('#maincol');
-            // make sure these things exist before we try to clean them up.
-            var item = {
-              type : that.schema.type
-            };
-            var title = content.find('h1').first().text();
-            var date = content.find('.author').first().text();
-            var body = content.find('.blog-body').html();
+            // ideally we move this (and the file details) into some kind of
+            // config so we can reuse this script and lose the prompt...
+            var content = $('#maincol'),
+                item = {
+                  postType : that.schema.type,
+                  seoTitle : row.Title,
+                  seoDate : row.Date,
+                  seoDesc : row.Description,
+                };
+
+            var title = content.find('h1').first().text(),
+                date = content.find('.author').first().text(),
+                body = content.find('.blog-body').html();
+
             if (title) {
               item.title = that.scrub(title);
             }
@@ -95,12 +102,12 @@ var buildContent = {
             }
             if (body) {
               item.body = body.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+              item.body = that.scrub(body);
             }
-            //console.log(item);
             that.data.push(item);
           })
         );
-    } // end for.
+    } // end loop.
 
     Promise.all(requests).then(function() {
       that.writeContent();
@@ -108,8 +115,15 @@ var buildContent = {
     .catch(function(e){throw e;});
   },
   writeContent : function () {
-    console.log('writeContent:', this.data);
-    //console.log(JSON.stringify());
+    var writer = csvWriter(),
+        filename = this.schema.type + '-content.csv';
+    writer.pipe(fs.createWriteStream(filename));
+    // this can't be right... but it works.
+    for(var i = 0, len = this.data.length; i < len; i++) {
+      writer.write(this.data[i]);
+    }
+    writer.end();
+    console.log('File \'', filename, '\' created successfully.');
   },
   scrub : function (content) {
     return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
