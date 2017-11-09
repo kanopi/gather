@@ -1,7 +1,7 @@
 {
   "name": "gathered",
   "productName": "Gathered: a content bouquet",
-  "version": "0.0.10-dev",
+  "version": "0.0.01-dev",
   "description": "Gathering content from URLs for CMS import.",
   "repository": {
     "type": "git",
