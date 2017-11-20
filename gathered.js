@@ -53,8 +53,6 @@ var buildContent = {
         // load file to a string. need to add error handling.
         that.schema = inputs;
         that.config = yaml.safeLoad(fs.readFileSync(inputs.config, 'utf8'));
-        console.log('config', that.config);
-
         that.urlStream = fs.readFileSync(that.config.inputfile, 'utf-8');
 
         that.parsePages();
@@ -66,15 +64,18 @@ var buildContent = {
     var that = this;
 
     papa.parse(this.urlStream, {
-      header: true,
-      complete: function(results) {
-        if (results.errors.length) {
-          onErr(results.errors);
-        }
+      header : true,
+      preview : 0,
+      skipEmptyLines : true,
+      complete : function(results) {
         console.log(colors.verbose('Getting page URLs: %s items found.'), results.data.length);
         that.pageList = results.data;
         that.getPages();
-    	}
+    	},
+      error: function(error,file) {
+          var fn = arguments.callee;
+          onErr(error, fn);
+      }
     });
 
     return this;
@@ -89,7 +90,8 @@ var buildContent = {
       var row = this.pageList[i];
 
       // with no URL, we have no reason to be here.
-      if ( !row.URL.length ) {
+      if ( !row.URL.length  || row.Notes == 'Dead link') {
+        console.log(colors.error("Row failed to import: %s"), row.URL, row.Notes);
         continue;
       }
 
@@ -139,13 +141,15 @@ var buildContent = {
           that.data.push(item);
           console.log(title.verbose, 'found.');
         })
-      );
+      )
     } // end loop.
 
     Promise.all(requests).then(function() {
       that.writeContent();
     })
-    .catch(function(e){throw e;});
+    .catch(function(err) {
+      console.log(colors.error("Promise request failed: %s"),err.message);
+    });
   },
   writeContent : function () {
     var writer = csvWriter(
@@ -165,8 +169,8 @@ var buildContent = {
   }
 };
 
-function onErr(err) {
-  console.log('Error: ', err);
+function onErr(err,fn) {
+  console.log('Error from',fn,":", err);
   return true;
 }
 
