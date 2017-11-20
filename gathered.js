@@ -7,7 +7,8 @@ var yaml = require('js-yaml'),
     papa = require('papaparse'),
     prompt =  require('prompt'),
     fs = require('fs'),
-    csvWriter = require('csv-write-stream');
+    csvWriter = require('csv-write-stream'),
+    colors = require('colors');
 
 var buildContent = {
   config : '',
@@ -79,7 +80,7 @@ var buildContent = {
     // this has to use promises.
     var that = this;
     var requests = [];
-    for(var i = 0, len = this.pageList.length; i < len; i++) {
+    for(var i = 0, len = this.pageList.length; i < 3; i++) {
 
       var row = this.pageList[i];
 
@@ -90,6 +91,7 @@ var buildContent = {
 
       var options = {
         uri: row.URL,
+        row: row,
         resolveWithFullResponse: true,
         transform: function (body, response) {
           return {body : body, meta : response.request.row};
@@ -126,7 +128,7 @@ var buildContent = {
             item.body = that.scrub(body);
           }
           that.data.push(item);
-          console.log(title,'returned.');
+          console.log(colors.cyan('%s'),title,'returned.');
         })
       );
     } // end loop.
@@ -147,7 +149,7 @@ var buildContent = {
       writer.write(this.data[i]);
     }
     writer.end();
-    console.log('File \'', filename, '\' created successfully.');
+    console.log(colors.green('File "%s" created successfully.', filename));
   },
   scrub : function (content) {
     return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
