@@ -80,7 +80,7 @@ var buildContent = {
     // this has to use promises.
     var that = this;
     var requests = [];
-    for(var i = 0, len = this.pageList.length; i < 3; i++) {
+    for(var i = 0, len = this.pageList.length; i < len; i++) {
 
       var row = this.pageList[i];
 
