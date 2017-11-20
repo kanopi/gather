@@ -90,29 +90,30 @@ var buildContent = {
 
       var options = {
         uri: row.URL,
-        rowMeta: row,
-        transform: function(body) {
-          return cheerio.load(body);
+        resolveWithFullResponse: true,
+        transform: function (body, response) {
+          return {body : body, meta : response.request.row};
         }
       };
       requests.push(
         request(options)
-        .then(function($) {
-          // ideally we move this (and the file details) into some kind of
-          // config so we can reuse this script and lose the prompt...
+        .then(function(data) {
+          $ = cheerio.load(data.body);
 
-          // we need to find our row data again - cleanest way to grab some meta info.
           var content = $('#maincol'),
+              head = $('head'),
               item = {
                 postType : that.schema.type,
-                pubDate : options.rowMeta.pubDate,
-                seoTitle : options.rowMeta.Title,
-                seoDesc : options.rowMeta.Description,
+                metaTitle : data.meta.Title,
+                metaKeywords : head.find('meta [name="keywords"]').text(),
+                metaDesc : data.meta.Description,
+                pubDate : data.meta.pubDate
               };
 
           var title = content.find('h1').first().text(),
               date = content.find('.author').first().text(),
               body = content.find('.blog-body').html();
+
 
           if (title) {
             item.title = that.scrub(title);
@@ -125,6 +126,7 @@ var buildContent = {
             item.body = that.scrub(body);
           }
           that.data.push(item);
+          console.log(title,'returned.');
         })
       );
     } // end loop.
