@@ -1,5 +1,3 @@
-var Promise = require('bluebird');
-
 var yaml = require('js-yaml'),
     request = require('request-promise'),
     errors = require('request-promise/errors'),
@@ -9,6 +7,19 @@ var yaml = require('js-yaml'),
     fs = require('fs'),
     csvWriter = require('csv-write-stream'),
     colors = require('colors');
+
+colors.setTheme({
+  silly: 'rainbow',
+  input: 'grey',
+  verbose: 'cyan',
+  prompt: 'grey',
+  info: 'green',
+  data: 'grey',
+  help: 'cyan',
+  warn: 'yellow',
+  debug: 'blue',
+  error: 'red'
+});
 
 var buildContent = {
   config : '',
@@ -67,7 +78,7 @@ var buildContent = {
         if (results.errors.length) {
           onErr(results.errors);
         }
-        console.log('Getting page URLs:',results.data.length,'items found.');
+        console.log(colors.verbose('Getting page URLs: %s items found.'), results.data.length);
         that.pageList = results.data;
         that.getPages();
     	}
@@ -76,7 +87,7 @@ var buildContent = {
     return this;
   },
   getPages : function () {
-    console.log('Accessing page contents. Please wait.');
+    console.log('Accessing page contents. Please wait.'.verbose);
     // this has to use promises.
     var that = this;
     var requests = [];
@@ -107,9 +118,9 @@ var buildContent = {
               item = {
                 postType : that.schema.type,
                 metaTitle : data.meta.Title,
-                metaKeywords : head.find('meta [name="keywords"]').text(),
+                metaKeywords : head.find('meta[name="keywords"]').attr('content'),
                 metaDesc : data.meta.Description,
-                pubDate : data.meta.pubDate
+                pubDate : data.meta.Date
               };
 
           var title = content.find('h1').first().text(),
@@ -128,7 +139,7 @@ var buildContent = {
             item.body = that.scrub(body);
           }
           that.data.push(item);
-          console.log(colors.cyan('%s'),title,'returned.');
+          console.log(title.verbose, 'found.');
         })
       );
     } // end loop.
@@ -149,7 +160,7 @@ var buildContent = {
       writer.write(this.data[i]);
     }
     writer.end();
-    console.log(colors.green('File "%s" created successfully.', filename));
+    console.log(colors.info('File "%s" created successfully.'), filename);
   },
   scrub : function (content) {
     return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
