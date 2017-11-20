@@ -8,6 +8,7 @@ var yaml = require('js-yaml'),
     csvWriter = require('csv-write-stream'),
     colors = require('colors');
 
+// making console logging more readable.
 colors.setTheme({
   silly: 'rainbow',
   input: 'grey',
@@ -33,23 +34,15 @@ var buildContent = {
     this.getUserInput();
     //Promise.all(main).then(this.writeContent());
   },
-  getUserInput: function() {
-    // get the CSV file path to parse from the user.
+  getUserInput : function() {
+    // grab the data we need to build this post type out.
     var inputs = {
       properties: {
         // would be _nice_ to make sure this exists and throw an error if not.
         // but this is a developer utility for a project at the moment.
-        filename: {
-          description: "Please enter the file path"
-        },
-        type: {
-          description: "Please enter the slug for the post type"
-        },
-        /*
         config: {
           description: "Please enter the path to your YAML file"
         }
-        */
       }
     };
     var that = this;
@@ -59,11 +52,11 @@ var buildContent = {
 
         // load file to a string. need to add error handling.
         that.schema = inputs;
+        that.config = yaml.safeLoad(fs.readFileSync(inputs.config, 'utf8'));
+        console.log('config', that.config);
 
-        if (that.config) {
-          that.config = yaml.safeLoad(fs.readFileSync(inputs.config, 'utf8'));
-        }
-        var file = that.urlStream = fs.readFileSync(inputs.filename, 'utf-8');
+        that.urlStream = fs.readFileSync(that.config.inputfile, 'utf-8');
+
         that.parsePages();
 
         return this;
@@ -113,31 +106,36 @@ var buildContent = {
         .then(function(data) {
           $ = cheerio.load(data.body);
 
-          var content = $('#maincol'),
-              head = $('head'),
+          var content = $(that.config.content),
+              head = $('head');
+
+              // fields in this original declaration are not overridden
+              // via the config.
               item = {
-                postType : that.schema.type,
+                postType : that.config.posttype,
                 metaTitle : data.meta.Title,
                 metaKeywords : head.find('meta[name="keywords"]').attr('content'),
                 metaDesc : data.meta.Description,
                 pubDate : data.meta.Date
               };
 
-          var title = content.find('h1').first().text(),
-              date = content.find('.author').first().text(),
-              body = content.find('.blog-body').html();
+          // Starting with post fields. We can add to this list as needed.
+          // There's a better way to build this, but this will work for now.
+          var title = content.find(that.config.item.title).first().text(),
+              byline = content.find(that.config.item.byline).first().text(),
+              body = content.find(that.config.item.body).html();
 
 
           if (title) {
             item.title = that.scrub(title);
           }
-          if (date) {
-            item.byline = that.scrub(date);
+          if (byline) {
+            item.byline = that.scrub(byline);
           }
           if (body) {
-            //item.body = body.replace(/[\x00-\x1F\x7F-\x9F]/g, "");
             item.body = that.scrub(body);
           }
+
           that.data.push(item);
           console.log(title.verbose, 'found.');
         })
@@ -153,7 +151,7 @@ var buildContent = {
     var writer = csvWriter(
       { headers : Object.keys(this.data[0]) }
     ),
-        filename = this.schema.type + '-content.csv';
+        filename = this.config.posttype + '-content.csv';
     writer.pipe(fs.createWriteStream(filename));
     // this can't be right... but it works.
     for(var i = 0, len = this.data.length; i < len; i++) {

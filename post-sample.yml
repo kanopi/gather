@@ -1,0 +1,7 @@
+posttype:   post
+inputfile:  sm.csv
+content:    "#maincol"
+item:
+    title:  "h1:first-of-type"
+    byline: ".author"
+    body:   ".blog-body"
