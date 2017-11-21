@@ -25,7 +25,6 @@ colors.setTheme({
 var buildContent = {
   config : '',
   data : [],
-  schema : {},
   urlStream : '',
   pageList : [],
   init : function() {
@@ -50,8 +49,7 @@ var buildContent = {
     prompt.get(inputs, function (err, inputs) {
         if (err) { return onErr(err); }
 
-        // load file to a string. need to add error handling.
-        that.schema = inputs;
+        // load file to a string. need error handling.
         that.config = yaml.safeLoad(fs.readFileSync(inputs.config, 'utf8'));
         that.urlStream = fs.readFileSync(that.config.inputfile, 'utf-8');
 
