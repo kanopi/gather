@@ -1,7 +1,10 @@
 posttype:   post
-inputfile:  sm.csv
+inputfile:  csv/post-sitemap.csv
+preview:    0
 content:    "#maincol"
 item:
     title:  "h1:first-of-type"
     byline: ".author"
     body:   ".blog-body"
+    tax1:   ".field.topics a"
+    tax2:   ".field.countries a"

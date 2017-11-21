@@ -51,6 +51,9 @@ var buildContent = {
 
         // load file to a string. need error handling.
         that.config = yaml.safeLoad(fs.readFileSync(inputs.config, 'utf8'));
+        if (!that.config.preview) {
+          that.config.preview = 0;
+        }
         that.urlStream = fs.readFileSync(that.config.inputfile, 'utf-8');
 
         that.parsePages();
@@ -66,7 +69,7 @@ var buildContent = {
       header : true,
       // use this option to load only a subset of the available data.
       // Set to 0 for all content.
-      preview : 0,
+      preview : that.config.preview,
       skipEmptyLines : true,
       complete : function(results) {
         console.log(colors.verbose('Getting page URLs: %s items found.'), results.data.length);
@@ -153,10 +156,10 @@ var buildContent = {
             item.body = that.scrub(body);
           }
           if (tax1) {
-            item.tax1 = that.scrub(tax1);
+            item.tax1 = that.scrub(tax1, true);
           }
           if (tax2) {
-            item.tax2 = that.scrub(tax2);
+            item.tax2 = that.scrub(tax2, true);
           }
 
           that.data.push(item);
@@ -200,18 +203,23 @@ var buildContent = {
     writer.end();
     console.log(colors.info('File "%s" created successfully.'), filename);
   },
-  scrub : function (content) {
+  scrub : function (content, implode) {
+    if (!implode) implode = false;
+
     switch(typeof content) {
       case 'string':
         return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
       case 'array', 'object':
-        // loop through and string concat elements.
-        var txt = [];
-        for(var i = 0, len = content.length; i < len; i++) {
-          // we are getting a jQuery style object from Cheerio.
-          txt.push(content[i].children[0].data);
+        if(implode) {
+          var txt = [];
+          for(var i = 0, len = content.length; i < len; i++) {
+            // we are getting a jQuery style object from Cheerio.
+            txt.push(content[i].children[0].data);
+          }
+          return txt.join(',');
         }
-        return txt.join(',');
+        return content;
+
       default:
         return content;
     }
