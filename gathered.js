@@ -135,7 +135,9 @@ var buildContent = {
           // There's a better way to build this, but this will work for now.
           var title = content.find(that.config.item.title).text(),
               byline = content.find(that.config.item.byline).text(),
-              body = content.find(that.config.item.body);
+              body = content.find(that.config.item.body),
+              tax1 = content.find(that.config.item.tax1).toArray(),
+              tax2 = content.find(that.config.item.tax2).toArray();
 
           if (title) {
             item.title = that.scrub(title);
@@ -149,6 +151,12 @@ var buildContent = {
             // .html() breaks stuff with no wrapper.
             if (body.length == 1) { body = body.html(); }
             item.body = that.scrub(body);
+          }
+          if (tax1) {
+            item.tax1 = that.scrub(tax1);
+          }
+          if (tax2) {
+            item.tax2 = that.scrub(tax2);
           }
 
           that.data.push(item);
@@ -193,10 +201,20 @@ var buildContent = {
     console.log(colors.info('File "%s" created successfully.'), filename);
   },
   scrub : function (content) {
-    if (typeof content != 'string') {
-      return content;
+    switch(typeof content) {
+      case 'string':
+        return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
+      case 'array', 'object':
+        // loop through and string concat elements.
+        var txt = [];
+        for(var i = 0, len = content.length; i < len; i++) {
+          // we are getting a jQuery style object from Cheerio.
+          txt.push(content[i].children[0].data);
+        }
+        return txt.join(',');
+      default:
+        return content;
     }
-    return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
   }
 };
 
