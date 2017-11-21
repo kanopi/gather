@@ -143,7 +143,9 @@ var buildContent = {
             item.title = that.scrub(title);
           }
           if (byline) {
-            item.byline = that.scrub(byline);
+            //console.log(byline);
+            item.byline = byline;
+            //item.byline = that.scrub(byline);
           }
           if (body) {
             // .html() breaks stuff with no wrapper.
@@ -157,7 +159,7 @@ var buildContent = {
         .catch(function(err) {
           var msg = err.name + ': ' + err.message;
           if(err.statusCode) {
-            msg = err.name + ': ' + err.statusCode + err.stack;
+            msg = err.name + ': ' + err.statusCode;
           }
           console.log(colors.error('Promise request failed: %s'), msg);
         })
