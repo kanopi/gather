@@ -1,10 +1,10 @@
 posttype:   post
-inputfile:  csv/post-sitemap.csv
-preview:    0
-content:    "#maincol"
+inputfile:  csv/post-sitemap.csv # path should be relative to gather.js, not this file.
+preview:    0 #this value let's you import a smaller subset of your data.
+content:    "#maincol" # your main content wrapper; all other selectors are found within this context.
 item:
-    title:  "h1:first-of-type"
+    title:  "h1"
     byline: ".author"
     body:   ".blog-body"
-    tax1:   ".field.topics a"
-    tax2:   ".field.countries a"
+    tax1:   ".field.topics a" #imports contents as a comma-delimited list of items.
+    tax2:   ".field.countries a" #imports contents as a comma-delimited list of items.

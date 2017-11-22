@@ -1,14 +1,14 @@
 {
-  "name": "gathered",
-  "productName": "Gathered: a content bouquet",
+  "name": "gather",
+  "productName": "Gather: a content bouquet",
   "version": "0.0.01-dev",
   "description": "Gathering content from URLs for CMS import.",
   "repository": {
     "type": "git",
-    "url": "https://github.com/kwhite/gathered.git"
+    "url": "https://github.com/kwhite/gather.git"
   },
   "bugs": {
-    "url": "https://github.com/kwhite/gathered/issues"
+    "url": "https://github.com/kwhite/gather/issues"
   },
   "license": "MIT",
   "dependencies": {
