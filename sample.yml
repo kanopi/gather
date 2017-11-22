@@ -1,0 +1,10 @@
+posttype:   post     # Used to name the output file and added as a column in the final CSV for convenience.
+inputfile:  csv/post-sitemap.csv     # Path should be relative to gather.js, not this file.
+preview:    0     # This value lets you import a smaller subset of your data. Set to 0 for all rows.
+content:    "#maincol"     # Your main content wrapper; all other selectors are found within this context.
+item:
+    title:  "h1"
+    byline: ".author"
+    body:   ".blog-body"     # Leave this blank to use your 'content' value as the body; the script will remove all other title/byline/tax1/etc values from the content before writing it to the CSV.
+    tax1:   ".field.topics a"     # Imports content as a comma-delimited list of items.
+    tax2:   ".field.countries a"     # Imports contents as a comma-delimited list of items.
