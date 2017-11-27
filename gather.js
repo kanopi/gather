@@ -71,7 +71,6 @@ var buildContent = {
     if (!this.config.preview) {
       this.config.preview = 0;
     }
-    console.log(this.config);
     urlStream = fs.readFileSync(this.config.inputfile, 'utf-8');
 
     var that = this;
