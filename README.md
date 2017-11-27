@@ -23,11 +23,13 @@ $ npm install
 ```
 
 ## Getting Ready
-You need two files to run this script: a source CSV with a column named `URL` at minimum, and a configured YAML file. Take a look at `sample.yml` in the repository for an example.
+You need two files to run this script: a source CSV with a column named `URL` at minimum, and a configured YAML file. Take a look at `sample.yml` in the repository for an example configuration.
 
 All paths in the YAML file are relative to the location of the main `gather.js` script.
 
 ## Ready... set... go!
 Run `node gather`, give it the path to your YAML file, and watch the magic happen.
+
+If you like the shortest route possible, you can use `node gather -y path/to/sample.yml` instead.
 
 The script will output a `[post-type]-content.csv` file in the script directory if it runs successfully.

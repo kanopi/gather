@@ -25,7 +25,6 @@ colors.setTheme({
 var buildContent = {
   config : '',
   data : [],
-  urlStream : '',
   pageList : [],
   init : function() {
     // I don't like having all of this in callback functions but chaining
@@ -44,26 +43,39 @@ var buildContent = {
       }
     };
     var that = this;
-    prompt.start();
-    prompt.get(inputs, function (err, inputs) {
-        if (err) { return onErr(err); }
 
-        // load file to a string. need better error handling.
-        that.config = yaml.safeLoad(fs.readFileSync(inputs.config, 'utf8'));
-        if (!that.config.preview) {
-          that.config.preview = 0;
-        }
-        that.urlStream = fs.readFileSync(that.config.inputfile, 'utf-8');
-
-        that.parsePages();
-
-        return this;
-    });
+    var yml;
+    if(process.argv.indexOf("-y") != -1){ //does our flag exist?
+      yml = process.argv[process.argv.indexOf("-y") + 1]; //grab the next item
+      // load file to a string. need better error handling.
+      this.config = this.loadYaml(yml);
+      this.parsePages();
+    }
+    else {
+      // otherwise we prompt the user.
+      prompt.start();
+      prompt.get(inputs, function (err, inputs) {
+          if (err) { return onErr(err); }
+          yml = inputs.config;
+          // load file to a string. need better error handling.
+          that.config = that.loadYaml(inputs.config);
+          that.parsePages();
+      });
+    }
+    return this;
+  },
+  loadYaml : function(yml) {
+    return yaml.safeLoad(fs.readFileSync(yml, 'utf8'));
   },
   parsePages : function() {
-    var that = this;
+    if (!this.config.preview) {
+      this.config.preview = 0;
+    }
+    console.log(this.config);
+    urlStream = fs.readFileSync(this.config.inputfile, 'utf-8');
 
-    papa.parse(this.urlStream, {
+    var that = this;
+    papa.parse(urlStream, {
       // file has a header row.
       header : true,
       // use preview option to load only a subset of the available data.
@@ -123,28 +135,28 @@ var buildContent = {
 
           var content = $(that.config.content),
               head = $('head');
+
           // We can add to this list as needed.
           // There's a better way to build this, but this will work for now.
           var title = content.find(that.config.item.title),
               byline = content.find(that.config.item.byline),
               body = content.find(that.config.item.body),
               tax1 = content.find(that.config.item.tax1),
-              tax2 = content.find(that.config.item.tax2);
+              tax2 = content.find(that.config.item.tax2),
+              profileTitle = content.find(that.config.item.profileTitle),
+              profileCompany = content.find(that.config.item.profileCompany);
 
-          // body will default to the full main content area if nothing is
+          // body will default to the main content area if nothing is
           // specified.
           if (!body.length) {
             body = $(that.config.content);
           }
           // Let's make sure we remove title, etc. since we KNOW we are storing
-          // those elsewhere. This lets us deal with content that doesn't
-          // have a wrapper element.
-          body.find(
-            that.config.item.title,
-            that.config.item.byline,
-            that.config.item.tax1,
-            that.config.item.tax2
-          ).remove();
+          // those elsewhere.
+          body.find(title, byline, tax1, tax2).remove();
+
+          // profile fields
+          body.find(profileTitle, profileCompany).remove();
 
           // build item that we'll log to the content CSV.
           var item = {
@@ -158,11 +170,13 @@ var buildContent = {
             pubDate : data.meta.Date,
 
             // user defined fields in YML config
-            title : that.scrub(title.text()),
-            byline : byline.text(),
+            title : that.scrub(title.first().text()),
+            byline : byline.first().text(),
             body : that.scrub(body.html()),
             tax1 : that.scrub(tax1.toArray(), true),
             tax2 : that.scrub(tax2.toArray(), true),
+            profileTitle : that.scrub(profileTitle.first().text()),
+            profileCompany : that.scrub(profileCompany.first().text()),
           };
 
           that.data.push(item);
