@@ -138,18 +138,40 @@ var buildContent = {
           // We can add to this list as needed.
           // There's a better way to build this, but this will work for now.
           var title = content.find(that.config.item.title),
-              byline = content.find(that.config.item.byline),
-              body = content.find(that.config.item.body),
-              tax1 = content.find(that.config.item.tax1),
-              tax2 = content.find(that.config.item.tax2),
-              profileTitle = content.find(that.config.item.profileTitle),
-              profileCompany = content.find(that.config.item.profileCompany);
+              body = content.find(that.config.body),
+
+              // need to move all this out to be custom fields.
+              fieldKeys = Object.keys(that.config.item.fields),
+              taxKeys = Object.keys(that.config.item.taxonomies),
+              customData = [],
+              key,val,$val;
 
           // body will default to the main content area if nothing is
           // specified.
           if (!body.length) {
             body = $(that.config.content);
           }
+
+          // get arbitrary list of fields for item.
+          for (var i=0, len = fieldKeys.length; i < len; i++) {
+            key = fieldKeys[i];
+            val = that.config.item.fields[key];
+
+            $val = content.find(val);
+            customData[key] = that.scrub($val.html());
+            body.find($val).remove();
+          }
+
+          // get list of taxonomies for items; these will be parsed as arrays.
+          for (var i=0, len = taxKeys.length; i < len; i++) {
+            key = taxKeys[i];
+            val = that.config.item.taxonomies[key];
+
+            $val = content.find(val);
+            customData[key] = that.scrub( $val.toArray(), true );
+            body.find($val).remove();
+          }
+
           // Let's make sure we remove title, etc. since we KNOW we are storing
           // those elsewhere.
           body.find(title, byline, tax1, tax2).remove();
@@ -167,17 +189,13 @@ var buildContent = {
             metaKeywords : head.find('meta[name="keywords"]').attr('content'),
             metaDesc : data.meta.Description,
             pubDate : data.meta.Date,
-
-            // user defined fields in YML config
-            title : that.scrub(title.first().text()),
-            byline : byline.first().text(),
+            // these two we'll assume always exist.
+            title : that.scrub(title.html()),
             body : that.scrub(body.html()),
-            tax1 : that.scrub(tax1.toArray(), true),
-            tax2 : that.scrub(tax2.toArray(), true),
-            profileTitle : that.scrub(profileTitle.first().text()),
-            profileCompany : that.scrub(profileCompany.first().text()),
           };
 
+          // add our custom fields
+          Object.assign(item, customData);
           that.data.push(item);
 
           // perception of progress!
@@ -223,7 +241,6 @@ var buildContent = {
   },
   scrub : function (content, implode) {
     if (!implode) implode = false;
-
     switch(typeof content) {
       case 'string':
         return content.trim().replace(/[\x00-\x1F\x7F-\x9F]/g, "");
