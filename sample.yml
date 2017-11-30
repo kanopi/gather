@@ -1,6 +1,6 @@
 posttype:   post     # Used to name the output file and added as a column in the final CSV for convenience.
 inputfile:  csv/post-sitemap.csv     # Path should be relative to gather.js, not this file.
-preview:    0     # This value lets you import a smaller subset of your data. Set to 0 for all rows.
+preview:    0     # This value lets you import a test subset of your data. Set to 0 for all rows.
 content:    "#maincol"     # Your main content wrapper; all other selectors are found within this context.
 item:
     title:  "h1"
