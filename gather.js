@@ -172,13 +172,6 @@ var buildContent = {
             body.find($val).remove();
           }
 
-          // Let's make sure we remove title, etc. since we KNOW we are storing
-          // those elsewhere.
-          body.find(title, byline, tax1, tax2).remove();
-
-          // profile fields
-          body.find(profileTitle, profileCompany).remove();
-
           // build item that we'll log to the content CSV.
           var item = {
             // Structure here assumes the spreadsheet follows XML sitemap
