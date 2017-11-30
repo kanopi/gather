@@ -138,13 +138,9 @@ var buildContent = {
           // We can add to this list as needed.
           // There's a better way to build this, but this will work for now.
           var title = content.find(that.config.item.title),
-              body = content.find(that.config.body),
-
-              // need to move all this out to be custom fields.
-              fieldKeys = Object.keys(that.config.item.fields),
-              taxKeys = Object.keys(that.config.item.taxonomies),
-              customData = [],
-              key,val,$val;
+              body = content.find(that.config.item.body),
+              customData = [], fieldKeys = [], taxKeys = [],
+              key, val, $val;
 
           // body will default to the main content area if nothing is
           // specified.
@@ -152,24 +148,35 @@ var buildContent = {
             body = $(that.config.content);
           }
 
-          // get arbitrary list of fields for item.
-          for (var i=0, len = fieldKeys.length; i < len; i++) {
-            key = fieldKeys[i];
-            val = that.config.item.fields[key];
+          if (that.config.item.fields) {
+            fieldKeys = Object.keys(that.config.item.fields);
+            // get arbitrary list of fields for item.
+            if(fieldKeys.length) {
+              for (var i = 0, len = fieldKeys.length; i < len; i++) {
+                key = fieldKeys[i];
+                val = that.config.item.fields[key];
 
-            $val = content.find(val);
-            customData[key] = that.scrub($val.html());
-            body.find($val).remove();
+                $val = content.find(val);
+                customData[key] = that.scrub($val.html());
+                body.find($val).remove();
+              }
+            }
           }
 
-          // get list of taxonomies for items; these will be parsed as arrays.
-          for (var i=0, len = taxKeys.length; i < len; i++) {
-            key = taxKeys[i];
-            val = that.config.item.taxonomies[key];
+          if (that.config.item.taxonomies) {
+            taxKeys = Object.keys(that.config.item.taxonomies);
 
-            $val = content.find(val);
-            customData[key] = that.scrub( $val.toArray(), true );
-            body.find($val).remove();
+            // get list of taxonomies for items; these will be parsed as arrays.
+            if (taxKeys.length) {
+              for (var n = 0, size = taxKeys.length; n < size; n++) {
+                key = taxKeys[i];
+                val = that.config.item.taxonomies[key];
+
+                $val = content.find(val);
+                customData[key] = that.scrub( $val.toArray(), true );
+                body.find($val).remove();
+              }
+            }
           }
 
           // build item that we'll log to the content CSV.
@@ -182,6 +189,7 @@ var buildContent = {
             metaKeywords : head.find('meta[name="keywords"]').attr('content'),
             metaDesc : data.meta.Description,
             pubDate : data.meta.Date,
+
             // these two we'll assume always exist.
             title : that.scrub(title.html()),
             body : that.scrub(body.html()),
@@ -251,7 +259,7 @@ var buildContent = {
       default:
         return content;
     }
-  }
+  },
 };
 
 function onErr(err,fn) {
