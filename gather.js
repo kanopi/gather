@@ -2,6 +2,7 @@ var yaml = require('js-yaml'),
     request = require('request-promise'),
     errors = require('request-promise/errors'),
     cheerio = require('cheerio'),
+    humanname = require('humanname'),
     papa = require('papaparse'),
     prompt =  require('prompt'),
     fs = require('fs'),
@@ -135,18 +136,20 @@ var buildContent = {
           var content = $(that.config.content),
               head = $('head');
 
-          // We can add to this list as needed.
-          // There's a better way to build this, but this will work for now.
-          var title = content.find(that.config.item.title),
-              body = content.find(that.config.item.body),
-              customData = [], fieldKeys = [], taxKeys = [],
-              key, val, $val;
+              // We can add to this list as needed.
+              var title = content.find(that.config.item.title),
+                  body = content.find(that.config.item.body),
+                  customData = [], fieldKeys = [], imgKeys = [], taxKeys = [],
+                  key, val, $val;
 
           // body will default to the main content area if nothing is
           // specified.
           if (!body.length) {
             body = $(that.config.content);
           }
+
+          // remove the title from the body contents, just to be sure.
+          body.find(title).remove();
 
           if (that.config.item.fields) {
             fieldKeys = Object.keys(that.config.item.fields);
@@ -163,13 +166,28 @@ var buildContent = {
             }
           }
 
+          if (that.config.item.images) {
+            imgKeys = Object.keys(that.config.item.images);
+            // get arbitrary list of images for item.
+            if(imgKeys.length) {
+              for (var x = 0, len = imgKeys.length; x < len; x++) {
+                key = imgKeys[x];
+                val = that.config.item.images[key];
+
+                $val = content.find(val);
+                customData[key] = $val.attr('src');
+                body.find($val).remove();
+              }
+            }
+          }
+
           if (that.config.item.taxonomies) {
             taxKeys = Object.keys(that.config.item.taxonomies);
 
             // get list of taxonomies for items; these will be parsed as arrays.
             if (taxKeys.length) {
               for (var n = 0, size = taxKeys.length; n < size; n++) {
-                key = taxKeys[i];
+                key = taxKeys[n];
                 val = that.config.item.taxonomies[key];
 
                 $val = content.find(val);

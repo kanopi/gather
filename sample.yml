@@ -7,6 +7,8 @@ item:
     body:   ".blog-body"     # Leave this blank to use your 'content' value as the body; the script will remove all other title/byline/tax1/etc values from the content before writing it to the CSV.
     fields:
       byline: ".author"
+    images:
+      featured: "img.featured" # This one needs to point to an actual image tag.
     taxonomies:
       tax1:   ".field.topics a"     # Imports content as a comma-delimited list of items.
       tax2:   ".field.countries a"     # Imports contents as a comma-delimited list of items.
